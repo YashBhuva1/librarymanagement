@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Library | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Background Animated Shapes -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <main class="container">
+        <!-- Auth View -->
+        <section id="auth-view" class="view glass-panel active">
+            <div class="auth-header">
+                <h1>Smart <span class="accent">Library</span></h1>
+                <p>Welcome back. Please login to your account.</p>
+            </div>
+            
+
+
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" required placeholder="admin@example.com" autocomplete="username">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary">Sign In</button>
+                <p class="auth-toggle">Don't have an account? <a href="#" onclick="toggleAuthMode(event, 'register')">Register here</a></p>
+            </form>
+
+            <!-- Register Form (Hidden by default) -->
+            <form id="register-form" onsubmit="handleRegister(event)" class="hidden">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="reg-name" required placeholder="John Doe">
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="reg-email" required placeholder="john@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary">Create Account</button>
+                <p class="auth-toggle">Already have an account? <a href="#" onclick="toggleAuthMode(event, 'login')">Login here</a></p>
+            </form>
+
+
+        </section>
+
+        <!-- Dashboard Layout with Sidebar -->
+        <section id="main-app-view" class="view hidden layout-dashboard">
+            <!-- Sidebar -->
+            <aside class="sidebar glass-panel-no-border">
+                <div class="sidebar-header">
+                    <h2>Smart<span class="accent">Lib</span></h2>
+                    <p id="user-display" class="user-email"></p>
+                </div>
+                <nav class="sidebar-nav">
+                    <button class="nav-btn active" onclick="switchPage('page-overview', this)">
+                        📊 Dashboard Overview
+                    </button>
+                    <button class="nav-btn" onclick="switchPage('page-books', this)">
+                        📚 Books Directory
+                    </button>
+                    <button id="nav-admin" class="nav-btn hidden" onclick="switchPage('page-admin', this)">
+                        ⚙️ Admin Panel
+                    </button>
+                </nav>
+                <div class="sidebar-footer">
+                    <button class="btn btn-outline full-width" onclick="logout()">Logout</button>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                
+                <!-- Page: Overview -->
+                <div id="page-overview" class="page active">
+                    <header class="page-header">
+                        <h2>Welcome to your Dashboard</h2>
+                        <p class="text-muted">Here is an overview of the library system.</p>
+                    </header>
+                    <div class="stats-grid">
+                        <div class="stat-card glass-panel">
+                            <h3>Total Books</h3>
+                            <div class="stat-value" id="stat-total-books">0</div>
+                        </div>
+                        <div class="stat-card glass-panel">
+                            <h3>Available</h3>
+                            <div class="stat-value text-success" id="stat-available-books">0</div>
+                        </div>
+                        <div class="stat-card glass-panel">
+                            <h3>Borrowed</h3>
+                            <div class="stat-value text-danger" id="stat-borrowed-books">0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Overdue Students Section (Admin Only) -->
+                    <div id="overdue-section" class="overdue-section glass-panel hidden" style="margin-top: 2rem;">
+                        <h3>⏰ Overdue Students (8+ Days)</h3>
+                        <p class="text-muted" style="margin-bottom: 1rem;">List of students who need to renew or return their books.</p>
+                        <div id="overdue-list" class="overdue-list">
+                            <p class="loading">Checking for overdue students...</p>
+                        </div>
+                    </div>
+
+                    <!-- My Active Borrows Section (Student Only) -->
+                    <div id="student-borrow-section" class="student-borrow-section glass-panel hidden" style="margin-top: 2rem;">
+                        <h3>📖 My Active Borrows</h3>
+                        <p class="text-muted" style="margin-bottom: 1rem;">Keep track of your borrow limits and return dates.</p>
+                        <div id="my-renewals-list" class="overdue-list">
+                            <p class="loading">Fetching your borrow status...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page: Books Directory -->
+                <div id="page-books" class="page hidden">
+                    <header class="page-header header-flex">
+                        <div>
+                            <h2>Books Directory</h2>
+                            <p class="text-muted">Browse and borrow books from our collection.</p>
+                        </div>
+                        <button class="btn btn-outline" style="width:auto;" onclick="fetchBooks()">🔄 Refresh</button>
+                    </header>
+                    
+                    <div class="books-grid" id="books-grid">
+                        <!-- Books will be populated here via JS -->
+                        <div class="loading">Loading books...</div>
+                    </div>
+                </div>
+
+                <!-- Page: Admin Panel -->
+                <div id="page-admin" class="page hidden">
+                    <header class="page-header">
+                        <h2>Admin Panel</h2>
+                        <p class="text-muted">Manage library inventory and users.</p>
+                    </header>
+
+                    <div class="admin-section glass-panel">
+                        <h3>➕ Add New Book</h3>
+                        <form id="add-book-form" onsubmit="handleAddBook(event)" class="inline-form">
+                            <div class="input-group">
+                                <label>Book Title</label>
+                                <input type="text" id="book-title" placeholder="The Great Gatsby" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Author</label>
+                                <input type="text" id="book-author" placeholder="F. Scott Fitzgerald" required>
+                            </div>
+                            <div class="input-group">
+                                <label>ISBN</label>
+                                <input type="text" id="book-isbn" placeholder="978-0743273565" required>
+                            </div>
+                            <div class="input-group" style="display:flex; align-items:flex-end;">
+                                <button type="submit" class="btn btn-primary" style="height: 48px;">Add Book</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="admin-section glass-panel" style="margin-top: 2rem;">
+                        <h3>🗑️ Manage Inventory</h3>
+                        <p class="text-muted">Browse the Books Directory to delete specific books.</p>
+                        <button class="btn btn-outline" style="margin-top:1rem; width:auto;" onclick="switchPage('page-books', document.querySelectorAll('.nav-btn')[1])">Go to Books Directory</button>
+                    </div>
+
+                    <!-- Manage Students Section -->
+                    <div class="admin-section glass-panel" style="margin-top: 2rem;">
+                        <h3>👥 Manage Students</h3>
+                        <p class="text-muted" style="margin-bottom: 1.5rem;">Search students and manually renew their borrowed books.</p>
+                        <div class="search-bar" style="margin-bottom: 1.5rem;">
+                            <input type="text" id="student-search" placeholder="Search by name or email..." 
+                                   style="width:100%; padding: 1rem; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--panel-border); color: white;"
+                                   oninput="handleStudentSearch(this.value)">
+                        </div>
+                        <div id="student-list" class="overdue-list">
+                            <p class="loading">Enter a query to search students...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
